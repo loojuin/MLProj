@@ -3,125 +3,77 @@
 
 
 import sys
-
-class Node:
-    def __init__(self):
-        pass
+from classes import *
 
 
-class Start(Node):
-    def __init__(self, next_y):
-        self.next_y = next_y
-
-    def __str__(self):
-        return "START"
-
-    def __repr__(self):
-        return str(self)
-
-    def to_list(self):
-        retval = [self]
-        return self.next_y.to_list(retval)
-
-
-class Stop(Node):
-    def __init__(self):
-        pass
-
-    def __str__(self):
-        return "STOP"
-
-    def __repr__(self):
-        return str(self)
-
-    def to_list(self, ls):
-        ls.append(self)
-        return ls
-
-
-class Y(Node):
-    def __init__(self, label, x, next_y = Stop()):
-        self.label = label
-        self.x = x
-        self.next_y = next_y
-
-    def __str__(self):
-        return "%s => %s" % (self.label, self.x)
-
-    def __repr__(self):
-        return str(self)
-
-    def to_list(self, ls):
-        ls.append(self)
-        return self.next_y.to_list(ls)
+class XYParse:
+    def __init__(self, path_to_file):
+        seqs = []
+        tags = set([])
+        stop = Stop()
+        start = Start(stop)
+        pointer = start
+        f = open(path_to_file, "r")
+        for line in f:
+            if line == "\n" or line == "\r" or line == "\r\n":
+                if pointer != start:
+                    seqs.append(start.to_list())
+                    stop = Stop()
+                    start = Start(stop)
+                    pointer = start
+            else:
+                linesplit = line.strip().split(" ")
+                x = linesplit[0]
+                y = linesplit[1]
+                tags.add(y)
+                new_x = X(x)
+                new_y = Y(y, new_x, stop)
+                pointer.next_y = new_y
+                pointer = new_y
+        if pointer != start:
+            seqs.append(start.to_list())
+        self.seqs = seqs
+        self.tags = tags
 
 
-class X(Node):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return str(self)
-
-
-def parse_xy(path_to_file):
-    retval = []
-    stop = Stop()
-    start = Start(stop)
-    pointer = start
-    f = open(path_to_file, "r")
-    for line in f:
-        if line == "\n" or line == "\r" or line == "\r\n":
-            if pointer != start:
-                retval.append(start.to_list())
-                stop = Stop()
-                start = Start(stop)
-                pointer = start
-        else:
-            linesplit = line.strip().split(" ")
-            x = linesplit[0]
-            y = linesplit[1]
-            new_x = X(x)
-            new_y = Y(y, new_x, stop)
-            pointer.next_y = new_y
-            pointer = new_y
-    if pointer != start:
-        retval.append(start.to_list())
-    return retval
-
-
-def parse_x(path_to_file):
-    retval = []
-    holder = []
-    f = open(path_to_file, "r")
-    for line in f:
-        if line == "\n" or line == "\r" or line == "\r\n":
-            if len(holder) > 0:
-                retval.append(holder)
-                holder = []
-        else:
-            linesplit = line.strip().split(" ")
-            x = linesplit[0]
-            new_x = X(x)
-            holder.append(new_x)
-    if len(holder) > 0:
-        retval.append(holder)
-    return retval
+class XParse:
+    def __init__(self, path_to_file):
+        seqs = []
+        holder = []
+        f = open(path_to_file, "r")
+        for line in f:
+            if line == "\n" or line == "\r" or line == "\r\n":
+                if len(holder) > 0:
+                    seqs.append(holder)
+                    holder = []
+            else:
+                linesplit = line.strip().split(" ")
+                x = linesplit[0]
+                new_x = X(x)
+                holder.append(new_x)
+        if len(holder) > 0:
+            seqs.append(holder)
+        self.seqs = seqs
 
 
 if __name__ == "__main__":
     filepath = sys.argv[2]
     if sys.argv[1] == "xy":
-        d = parse_xy(filepath)
+        p = XYParse(filepath)
+        s = p.seqs
+        t = p.tags
+        for i in s:
+            for p in i:
+                print p
+            print ""
+        print t
     elif sys.argv[1] == "x":
-        d = parse_x(filepath)
+        p = XParse(filepath)
+        s = p.seqs
+        for i in s:
+            for p in i:
+                print p
+            print ""
     else:
-        print "Invalid mode."
-        quit(0)
-    for i in d:
-        for p in i:
-            print p
-        print ""
+        print "Invalid mode. Usage: $ python parser.py [x|xy] path/to/your/file"
+

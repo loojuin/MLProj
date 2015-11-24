@@ -8,8 +8,7 @@ import os
 
 def write_file(seqs, filename):
     if os.path.isfile(filename):
-        print "ABORT - File %s already exists."%(filename)
-        quit(0)
+        raise Exception("File already exists: %s" % filename)
     f = open(filename, "w")
     for seq in seqs:
         for node in seq:

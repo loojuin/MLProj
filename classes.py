@@ -59,6 +59,9 @@ class Y(StateNode):
         ls.append(self)
         return self.next_y.to_list(ls)
 
+    def to_file(self):
+        return "%s %s" % (self.x.value, self.label)
+
 
 class X:
     def __init__(self, value):

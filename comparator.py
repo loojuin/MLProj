@@ -1,10 +1,10 @@
 #!~/anaconda/bin/python
 #
+# This module contains the logic for comparing StateNode sequences,
+# and reporting the accuracy of prediction algorithms.
 
 
-from classes import *
-
-
+#
 def calculate_accuracy(pred_seqs, test_seqs):
     if len(pred_seqs) != len(test_seqs):
         raise Exception("The list of node sequences do not match.")
@@ -18,9 +18,9 @@ def calculate_accuracy(pred_seqs, test_seqs):
         for j in range(1, len(pred_seq) - 1, 1):
             pred = pred_seq[j]
             test = test_seq[j]
-            if pred.x.value != test.x.value:
+            if pred.word.value != test.word.value:
                 raise Exception("Found a node that has non-matching x value.")
-            if pred.label == test.label:
+            if pred.name == test.name:
                 correct += 1
             total += 1
     return float(correct)/float(total)

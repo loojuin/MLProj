@@ -1,5 +1,6 @@
 #!~/anaconda/bin/python
 #
+# This module contains the logic for writing the StateNode sequences into text files.
 
 
 from classes import *
@@ -14,6 +15,6 @@ def write_file(seqs, filename):
         for node in seq:
             if isinstance(node, SpecialNode):
                 continue
-            f.write(node.to_file() + "\n")
+            f.write(node.to_text() + "\n")
         f.write("\n")
     f.close()

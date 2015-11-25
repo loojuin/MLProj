@@ -6,6 +6,7 @@ from classes import *
 import parser
 import sys
 import filewriter
+import comparator
 
 
 class EmissionParameters:
@@ -64,7 +65,7 @@ def emission_predict(xseqs, params, labels):
             current.next_y = newnode
             current = newnode
         xyseqs.append(start.to_list())
-    return xyseqs
+    return SeqContainer(xyseqs)
 
 
 if __name__ == "__main__":
@@ -76,11 +77,13 @@ if __name__ == "__main__":
     output = sys.argv[3]
     xy_train = parser.XYParse(train)
     x_test = parser.XParse(test)
+    xy_test = parser.XYParse(test)
     params = train_emission(xy_train.seqs)
     xy_pred = emission_predict(x_test.seqs, params, xy_train.tags)
-    filewriter.write_file(xy_pred, output)
-    for seq in xy_pred:
+    filewriter.write_file(xy_pred.seqs, output)
+    acc = comparator.calculate_accuracy(xy_pred.seqs, xy_test.seqs)
+    for seq in xy_pred.seqs:
         for node in seq:
             print node
         print ""
-
+    print "Accuracy: %f" % acc

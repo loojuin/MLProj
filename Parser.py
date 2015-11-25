@@ -6,7 +6,7 @@ import sys
 from classes import *
 
 
-class XYParse:
+class XYParse(SeqContainer):
     def __init__(self, path_to_file):
         seqs = []
         tags = set([])
@@ -36,7 +36,7 @@ class XYParse:
         self.tags = tags
 
 
-class XParse:
+class XParse(SeqContainer):
     def __init__(self, path_to_file):
         seqs = []
         holder = []

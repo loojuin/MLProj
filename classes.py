@@ -72,3 +72,8 @@ class X:
 
     def __repr__(self):
         return str(self)
+
+
+class SeqContainer:
+    def __init__(self, seqs = []):
+        self.seqs = seqs

@@ -77,6 +77,9 @@ def parse_x(path_to_file):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print "Too few argument. Usage $ python parser.py [x|xy] path/to/your/file"
+        quit(0)
     filepath = sys.argv[2]
     if sys.argv[1] == "xy":
         s, t = parse_xy(filepath)

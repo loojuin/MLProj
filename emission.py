@@ -48,7 +48,41 @@ class EmissionParameters:
         except KeyError:
             return 1.0/float(self.states[tag_name] + 1)
 
+# An object that computes and contains the transition parameters.
+class TransitionParameters:
+    def __init__(self):
+        self.transitions = {}
+        self.states = {}
 
+    # Train the parameters with two nodes.
+    #
+    # Params:
+    # tag1 - The y(i-1) Tag object
+    # tag2 - The y(i) Tag object
+    def train(self, tag1, tag2):
+        
+        k = (tag1.name, tag2.name)
+        try:
+            self.transitions[k] += 1
+        except KeyError:
+            self.transitions[k] = 1
+        try:
+            self.states[tag1.name] += 1
+        except KeyError:
+            self.states[tag1.name] = 1
+
+    # Get the emission parameters for a given tag name and word value.
+    #
+    # Params:
+    # tag1 - The name of y(i-1) Tag
+    # tag2 - The name of y(i) Tag
+    def get(self, tag1, tag2):
+        k = (tag1, tag2)
+        try:
+            return float(self.transitions[k])/float(self.states[tag1])
+        except KeyError:
+            return 1.0/float(self.states[tag1])
+            
 # Train the emission parameters using the training data.
 #
 # Params:
@@ -63,6 +97,19 @@ def train_emission(seqs):
             tracker.train(node)
     return tracker
 
+# Train the transition parameters using the training data.
+#
+# Params:
+# seqs - A list of lists of StateNode objects, such as those obtained from parser.parse_xy()
+#
+# Returns:
+# A trained EmissionParameters object.
+def train_transition(seqs):
+    tracker = TransitionParameters()
+    for seq in seqs:
+        for i in range(len(seq)-1):
+            tracker.train(seq[i],seq[i+1])
+    return tracker
 
 # Predict the tags for a given sequence of Word objects.
 #
@@ -97,6 +144,39 @@ def emission_predict(word_seqs, params, tag_names):
         xyseqs.append(start.to_list())
     return xyseqs
 
+# Predict the tags for a given sequence of Word objects using the Viterbi Algorithm.
+#
+# Params:
+# word_seqs - A list of lists of Word objects, such as those obtained from parser.parse_x()
+# emiss_params - The trained EmissionParameters object
+# trans_params - The trained TransitionParameters object
+# tag_names - A list of the possible tag names, such as would be obtained from parser.parse_xy()
+#
+# Returns:
+# A list of lists of StateNode objects.
+def viterbi_predict(word_seqs, emiss_params,trans_params, tag_names):
+    def argmax_y(xvalue):
+        currentL = None
+        currentP = 0.0
+        for l in tag_names:
+            p = params.get(l, xvalue)
+            if p > currentP:
+                currentL = l
+                currentP = p
+        return currentL
+
+    xyseqs = []
+    for seq in word_seqs:
+        stop = Stop()
+        start = Start(stop)
+        current = start
+        for node in seq:
+            ylabel = argmax_y(node.value)
+            newnode = Tag(ylabel, node, stop)
+            current.next_tag = newnode
+            current = newnode
+        xyseqs.append(start.to_list())
+    return xyseqs
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
@@ -107,14 +187,15 @@ if __name__ == "__main__":
     output = sys.argv[3]
     xy_train, tags = ps.parse_xy(train)
     x_test = ps.parse_x(test)
-    xy_test, junk = ps.parse_xy(test)
-    params = train_emission(xy_train)
-    xy_pred = emission_predict(x_test, params, tags)
+#    xy_test, junk = ps.parse_xy(test)
+    emiss_params = train_emission(xy_train)
+    trans_params = train_transition(xy_train)
+    xy_pred = emission_predict(x_test, emiss_params, tags)
     filewriter.write_file(xy_pred, output)
-    acc = comparator.calculate_accuracy(xy_pred, xy_test)
-    for seq in xy_pred:
-        for node in seq:
-            print node
-        print ""
-    print "Accuracy: %f" % acc
+#    acc = comparator.calculate_accuracy(xy_pred, xy_test)
+#    for seq in xy_pred:
+#        for node in seq:
+#            print node
+#        print ""
+#    print "Accuracy: %f" % acc
     

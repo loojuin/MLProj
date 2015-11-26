@@ -7,7 +7,7 @@
 
 
 from classes import *
-import parser
+import parse as ps
 import sys
 import filewriter
 import comparator
@@ -105,9 +105,9 @@ if __name__ == "__main__":
     train = sys.argv[1]
     test = sys.argv[2]
     output = sys.argv[3]
-    xy_train, tags = parser.parse_xy(train)
-    x_test = parser.parse_x(test)
-    xy_test, junk = parser.parse_xy(test)
+    xy_train, tags = ps.parse_xy(train)
+    x_test = ps.parse_x(test)
+    xy_test, junk = ps.parse_xy(test)
     params = train_emission(xy_train)
     xy_pred = emission_predict(x_test, params, tags)
     filewriter.write_file(xy_pred, output)
@@ -117,3 +117,4 @@ if __name__ == "__main__":
             print node
         print ""
     print "Accuracy: %f" % acc
+    

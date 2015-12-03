@@ -18,7 +18,22 @@ import comparator
 # Returns:
 # A list of lists of StateNode objects.
 def viterbi_predict(word_seqs, emiss_params, trans_params, tag_names):
+	# A class representing a Tag candidate, and also an entry in the "Pi" table.
+	#
+	# It is similar to the Tag class, except that instead of being forward-linked, it is
+	# backward-linked (i.e., instead of containing a reference to the next node, it contains
+	# a reference to the previous node).
+	#
+	# It also contains the probability value.
 	class ViterbiNode:
+		# Create a new ViterbiNode object.
+		#
+		# Performs the maximum likelihood estimation when instantiated.
+		#
+		# Params:
+		# word - The Word object that is associated with this Tag candidate.
+		# tag_name - The name of the tag that this node represents.
+		# prev_node_list - A list of all node candidates associated with the previous word in the sequence.
 		def __init__(self, word, tag_name, prev_node_list):
 			self.word = word
 			self.tag_name = tag_name

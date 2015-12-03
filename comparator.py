@@ -4,7 +4,16 @@
 # and reporting the accuracy of prediction algorithms.
 
 
+# Calculate the accuracy score of a set of predicted sequences against
+# the actual sequences.
 #
+# Params:
+# pred_seqs - A list of lists of StateNode objects, generated from the learning algorithms.
+# test_seqs - A list of lists of StateNode objects, taken directly from the source.
+#
+# Returns:
+# A float value between 0 and 1, representing the ratio of the number of correct
+# predictions divided by the total number of nodes.
 def calculate_accuracy(pred_seqs, test_seqs):
     if len(pred_seqs) != len(test_seqs):
         raise Exception("The list of node sequences do not match.")

@@ -12,7 +12,7 @@ class TransitionParameters:
 		self.transitions = {}
 		self.states = {}
 
-	# Train the parameters with two nodes.
+	# Train the parameters with a node.
 	#
 	# Params:
 	# tag - A Tag object
@@ -29,7 +29,7 @@ class TransitionParameters:
 		except KeyError:
 			self.states[tag.name] = 1
 
-	# Get the emission parameters for a given tag name and word value.
+	# Get the transition parameters for a given tag name and word value.
 	#
 	# Params:
 	# tag1 - The name of y(i) Tag

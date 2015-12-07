@@ -18,7 +18,10 @@ import time
 #
 # Returns:
 # A list of lists of StateNode objects.
-def viterbi_predict(word_seqs, emiss_params, trans_params, tag_names):
+def kbest_viterbi_predict(word_seqs, emiss_params, trans_params, tag_names, k):
+	if k > len(tag_names):
+		raise Exception("Cannot have %d-th best path if number of tags is less than %d" % (k, k))
+
 	# A class representing a Tag candidate, and also an entry in the "Pi" table.
 	#
 	# It is similar to the Tag class, except that instead of being forward-linked, it is
@@ -26,8 +29,8 @@ def viterbi_predict(word_seqs, emiss_params, trans_params, tag_names):
 	# a reference to the previous node).
 	#
 	# It also contains the probability value.
-	class ViterbiNode:
-		# Create a new ViterbiNode object.
+	class KBestViterbiNode:
+		# Create a new KBestViterbiNode object.
 		#
 		# Performs the maximum likelihood estimation when instantiated.
 		#
@@ -35,40 +38,73 @@ def viterbi_predict(word_seqs, emiss_params, trans_params, tag_names):
 		# word - The Word object that is associated with this Tag candidate.
 		# tag_name - The name of the tag that this node represents.
 		# prev_node_list - A list of all node candidates associated with the previous word in the sequence.
-		def __init__(self, word, tag_name, prev_node_list):
+		def __init__(self, word, tag_name, p, parent):
 			self.word = word
 			self.tag_name = tag_name
-			self.p = -1.0
-			self.parent = None
-			if len(prev_node_list) == 0:
-				self.p = trans_params.get("", self.tag_name) * emiss_params.get(self.tag_name, self.word.value)
-			for node in prev_node_list:
-				cur_p = node.p * trans_params.get(node.tag_name, self.tag_name) * emiss_params.get(self.tag_name, self.word.value)
-				if cur_p > self.p:
-					self.p = cur_p
-					self.parent = node
+			self.p = p
+			self.parent = parent
+
+	class BestFirstBoundedSortedList:
+		def __init__(self):
+			self.bound = k
+			self.list = []
+
+		def put(self, node):
+			if len(self.list) == 0:
+				self.list.append(node)
+				return
+			inserted = False
+			for i in range(len(self.list)):
+				if self.list[i].p < node.p:
+					self.list.insert(i, node)
+					inserted = True
+					if len(self.list) > self.bound:
+						self.list.pop()
+					break
+			if (not inserted) and (len(self.list) < self.bound):
+				self.list.append(node)
+
+		def integrity_check(self):
+			if len(self.list) > self.bound:
+				raise Exception("Error! BestFirstBoundedSortedList length exceeded the bound.")
+			for i in range(len(self.list) - 1):
+				if self.list[i].p < self.list[i + 1].p:
+					raise Exception("Error! BestFirstBoundedSortedList has misordered elements.")
+
+	def get_k_best_parents(word, tag_name, prev_layer):
+		if len(prev_layer) == 0:
+			e = emiss_params.get(tag_name, word.value)
+			t = trans_params.get("", tag_name)
+			return [KBestViterbiNode(word, tag_name, e*t, None)]
+		buffer = BestFirstBoundedSortedList()
+		for node in prev_layer:
+			e = emiss_params.get(tag_name, word.value)
+			t = trans_params.get(node.tag_name, tag_name)
+			l = node.p*e*t
+			buffer.put(KBestViterbiNode(word, tag_name, l, node))
+		# buffer.integrity_check()  # For debugging.
+		return buffer.list
 
 	retval = []
+
 	likelihoods = 0.0
 
 	for word_seq in word_seqs:
-		node_layers = [[]]
+		current_layer = []
 		for word in word_seq:
-			layer = []
+			upcoming_layer = []
 			for tag in tag_names:
-				layer.append(ViterbiNode(word, tag, node_layers[-1]))
-			node_layers.append(layer)
+				upcoming_layer.extend(get_k_best_parents(word, tag, current_layer))
+			current_layer = upcoming_layer
 
-		last_layer = node_layers[-1]
-		last_node = None
-		p = -1.0
-		for node in last_layer:
-			cur_p = trans_params.get(node.tag_name, "")
-			if cur_p > p:
-				last_node = node
-				p = cur_p
+		final_buffer = BestFirstBoundedSortedList()
+		for node in current_layer:
+			t = trans_params.get(node.tag_name, "")
+			l = node.p * t
+			final_buffer.put(KBestViterbiNode(None, "", l, node))
+		last_node = final_buffer.list[-1].parent
 
-		likelihoods += p
+		likelihoods += final_buffer.list[-1].p
 
 		cur_tag = Stop()
 		cur_node = last_node
@@ -79,14 +115,14 @@ def viterbi_predict(word_seqs, emiss_params, trans_params, tag_names):
 		start = Start(cur_tag)
 		retval.append(start.to_list())
 
-	print "Average maximum likelihood: %f" % (likelihoods / len(retval))
+	print "%d-th best likelihood: %f" % (k, likelihoods/len(retval))
 
 	return retval
 
 
 if __name__ == "__main__":
 	if len(sys.argv) != 4:
-		print "Not enough arguments. Usage: $ python viterbi.py [training file] [testing file] [output file]"
+		print "Not enough arguments. Usage: $ python kbest_viterbi.py [training file] [testing file] [output file]"
 		quit(0)
 	train = sys.argv[1]
 	test = sys.argv[2]
@@ -103,7 +139,7 @@ if __name__ == "__main__":
 	train_end = time.time()
 	print "Finished training."
 	pred_start = time.time()
-	xy_pred = viterbi_predict(x_test, emiss_params,	trans_params, tags)
+	xy_pred = kbest_viterbi_predict(x_test, emiss_params, trans_params, tags, 10)
 	pred_end = time.time()
 	filewriter.write_file(xy_pred, output)
 	acc = comparator.calculate_accuracy(xy_pred, xy_test)

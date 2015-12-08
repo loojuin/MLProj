@@ -1,5 +1,10 @@
 #!~/anaconda/bin/python
 #
+# This module contains the logic for performing kth-best predictions with a modified Viterbi algorithm.
+#
+# Running this module from the command line would perform a complete training and prediction cycle,
+# with the final tagged sequence being printed to a file, and also reporting the accuracy of the predictions.
+
 
 from transition import *
 from emission import *
@@ -12,19 +17,18 @@ import comparator
 import time
 
 
-# Predict the tags for a given sequence of Word objects using the Viterbi Algorithm.
+# Predict the k-th best tags for a given sequence of Word objects using a modified Viterbi Algorithm.
 #
 # Params:
 # word_seqs - A list of lists of Word objects, such as those obtained from parser.parse_x()
 # emiss_params - The trained EmissionParameters object
 # trans_params - The trained TransitionParameters object
 # tag_names - A list of the possible tag names, such as would be obtained from parser.parse_xy()
+# k - Parameter for the desired ranking
 #
 # Returns:
 # A list of lists of StateNode objects.
 def kbest_viterbi_predict(word_seqs, emiss_params, trans_params, tag_names, k):
-	if k > len(tag_names):
-		raise Exception("Cannot have %d-th best path if number of tags is less than %d" % (k, k))
 
 	# A class representing a Tag candidate, and also an entry in the "Pi" table.
 	#
@@ -48,6 +52,15 @@ def kbest_viterbi_predict(word_seqs, emiss_params, trans_params, tag_names, k):
 			self.p = p
 			self.parent = parent
 
+	# Get the best k lineages for a particular word and tag.
+	#
+	# Params:
+	# word - The Word object to be associated with this tag.
+	# tag_name - The name of the tag.
+	# prev_layer - A list of nodes associated with the previous word in the sequence.
+	#
+	# Returns:
+	# A list of KBestViterbiNode objects with the same tag and associated with the same word.
 	def get_k_best_parents(word, tag_name, prev_layer):
 		if len(prev_layer) == 0:
 			e = emiss_params.get(tag_name, word.value)

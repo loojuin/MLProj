@@ -1,3 +1,11 @@
+#!~/anaconda/bin/python
+#
+# This module contains the logic for performing predictions with the Viterbi algorithm.
+#
+# Running this module from the command line would perform a complete training and prediction cycle,
+# with the final tagged sequence being printed to a file, and also reporting the accuracy of the predictions.
+
+
 from transition import *
 from emission import *
 from classes import *

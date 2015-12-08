@@ -3,7 +3,7 @@
 # This module contains the logic for computing the emission parameters for a tag-word sequence.
 #
 # Running this module from the command line would perform a complete training and prediction cycle,
-# with the final tagged sequence being printed to the console, and also the accuracy of the predictions.
+# with the final tagged sequence being printed to a file, and also reporting the accuracy of the predictions.
 
 
 from classes import *

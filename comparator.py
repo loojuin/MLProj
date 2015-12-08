@@ -2,6 +2,8 @@
 #
 # This module contains the logic for comparing StateNode sequences,
 # and reporting the accuracy of prediction algorithms.
+#
+# Running this module from the console would report the similarity between two files.
 
 
 import sys

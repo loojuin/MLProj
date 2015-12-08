@@ -115,18 +115,19 @@ def kbest_viterbi_predict(word_seqs, emiss_params, trans_params, tag_names, k):
 		start = Start(cur_tag)
 		retval.append(start.to_list())
 
-	print "%d-th best likelihood: %f" % (k, likelihoods/len(retval))
+	print "%d-th best likelihood:" % k, likelihoods/len(retval)
 
 	return retval
 
 
 if __name__ == "__main__":
-	if len(sys.argv) != 4:
-		print "Not enough arguments. Usage: $ python kbest_viterbi.py [training file] [testing file] [output file]"
+	if len(sys.argv) != 5:
+		print "Not enough arguments. Usage: $ python kbest_viterbi.py [k] [training file] [testing file] [output file]"
 		quit(0)
-	train = sys.argv[1]
-	test = sys.argv[2]
-	output = sys.argv[3]
+	k = int(sys.argv[1])
+	train = sys.argv[2]
+	test = sys.argv[3]
+	output = sys.argv[4]
 	parse_start = time.time()
 	xy_train, tags = parse.parse_xy(train)
 	x_test = parse.parse_x(test)
@@ -139,7 +140,7 @@ if __name__ == "__main__":
 	train_end = time.time()
 	print "Finished training."
 	pred_start = time.time()
-	xy_pred = kbest_viterbi_predict(x_test, emiss_params, trans_params, tags, 10)
+	xy_pred = kbest_viterbi_predict(x_test, emiss_params, trans_params, tags, k)
 	pred_end = time.time()
 	filewriter.write_file(xy_pred, output)
 	acc = comparator.calculate_accuracy(xy_pred, xy_test)

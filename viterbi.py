@@ -42,6 +42,7 @@ def viterbi_predict(word_seqs, emiss_params, trans_params, tag_names):
 			self.parent = None
 			if len(prev_node_list) == 0:
 				self.p = trans_params.get("", self.tag_name) * emiss_params.get(self.tag_name, self.word.value)
+				return
 			for node in prev_node_list:
 				cur_p = node.p * trans_params.get(node.tag_name, self.tag_name) * emiss_params.get(self.tag_name, self.word.value)
 				if cur_p > self.p:
@@ -79,7 +80,7 @@ def viterbi_predict(word_seqs, emiss_params, trans_params, tag_names):
 		start = Start(cur_tag)
 		retval.append(start.to_list())
 
-	print "Average maximum likelihood: %f" % (likelihoods / len(retval))
+	print "Average maximum likelihood:", likelihoods / len(retval)
 
 	return retval
 

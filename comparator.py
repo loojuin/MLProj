@@ -4,6 +4,10 @@
 # and reporting the accuracy of prediction algorithms.
 
 
+import sys
+import parse
+
+
 # Calculate the accuracy score of a set of predicted sequences against
 # the actual sequences.
 #
@@ -33,3 +37,13 @@ def calculate_accuracy(pred_seqs, test_seqs):
                 correct += 1
             total += 1
     return float(correct)/float(total)
+
+if __name__ == "__main__":
+	if len(sys.argv) != 3:
+		print "Not enough arguments. Usage: $ python comparator.py [file 1] [file 2]"
+	file1 = sys.argv[1]
+	file2 = sys.argv[2]
+	seqs1, junk1 = parse.parse_xy(file1)
+	seqs2, junk2 = parse.parse_xy(file2)
+	acc = calculate_accuracy(seqs1, seqs2)
+	print "Similarity:", acc

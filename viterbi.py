@@ -53,18 +53,18 @@ def viterbi_predict(word_seqs, emiss_params, trans_params, tag_names):
 	likelihoods = 0.0
 
 	for word_seq in word_seqs:
-		node_layers = [[]]
+		current_layer = []
 		for word in word_seq:
-			layer = []
+			upcoming_layer = []
 			for tag in tag_names:
-				layer.append(ViterbiNode(word, tag, node_layers[-1]))
-			node_layers.append(layer)
+				upcoming_layer.append(ViterbiNode(word, tag, current_layer))
+			current_layer = upcoming_layer
 
-		last_layer = node_layers[-1]
+		last_layer = current_layer
 		last_node = None
 		p = -1.0
 		for node in last_layer:
-			cur_p = trans_params.get(node.tag_name, "")
+			cur_p = node.p * trans_params.get(node.tag_name, "")
 			if cur_p > p:
 				last_node = node
 				p = cur_p

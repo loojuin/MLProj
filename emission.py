@@ -11,6 +11,7 @@ import parse as ps
 import sys
 import filewriter
 import comparator
+import time
 
 
 # An object that computes and contains the emission parameters.
@@ -110,15 +111,26 @@ if __name__ == "__main__":
 	train = sys.argv[1]
 	test = sys.argv[2]
 	output = sys.argv[3]
+	parse_start = time.time()
 	xy_train, tags = ps.parse_xy(train)
 	x_test = ps.parse_x(test)
 	xy_test, junk = ps.parse_xy(test)
+	parse_end = time.time()
+	print "Finished parsing."
+	train_start = time.time()
 	emiss_params = train_emission(xy_train)
+	train_end = time.time()
+	print "Finished training."
+	pred_start = time.time()
 	xy_pred = emission_predict(x_test, emiss_params, tags)
+	pred_end = time.time()
 	filewriter.write_file(xy_pred, output)
 	acc = comparator.calculate_accuracy(xy_pred, xy_test)
-	for seq in xy_pred:
-		for node in seq:
-			print node
-		print ""
+	# for seq in xy_pred:
+	# 	for node in seq:
+	# 		print node
+	# 	print ""
+	print "Time taken to parse: %f s" % (parse_end - parse_start)
+	print "Time taken to train: %f s" % (train_end - train_start)
+	print "Time taken to predict: %f s" % (pred_end - pred_start)
 	print "Accuracy: %f" % acc

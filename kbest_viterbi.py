@@ -1,6 +1,10 @@
+#!~/anaconda/bin/python
+#
+
 from transition import *
 from emission import *
 from classes import *
+from helpers import *
 
 import parse
 import filewriter
@@ -44,39 +48,12 @@ def kbest_viterbi_predict(word_seqs, emiss_params, trans_params, tag_names, k):
 			self.p = p
 			self.parent = parent
 
-	class BestFirstBoundedSortedList:
-		def __init__(self):
-			self.bound = k
-			self.list = []
-
-		def put(self, node):
-			if len(self.list) == 0:
-				self.list.append(node)
-				return
-			inserted = False
-			for i in range(len(self.list)):
-				if self.list[i].p < node.p:
-					self.list.insert(i, node)
-					inserted = True
-					if len(self.list) > self.bound:
-						self.list.pop()
-					break
-			if (not inserted) and (len(self.list) < self.bound):
-				self.list.append(node)
-
-		def integrity_check(self):
-			if len(self.list) > self.bound:
-				raise Exception("Error! BestFirstBoundedSortedList length exceeded the bound.")
-			for i in range(len(self.list) - 1):
-				if self.list[i].p < self.list[i + 1].p:
-					raise Exception("Error! BestFirstBoundedSortedList has misordered elements.")
-
 	def get_k_best_parents(word, tag_name, prev_layer):
 		if len(prev_layer) == 0:
 			e = emiss_params.get(tag_name, word.value)
 			t = trans_params.get("", tag_name)
 			return [KBestViterbiNode(word, tag_name, e*t, None)]
-		buffer = BestFirstBoundedSortedList()
+		buffer = BestFirstBoundedSortedList(k, lambda n: n.p)
 		for node in prev_layer:
 			e = emiss_params.get(tag_name, word.value)
 			t = trans_params.get(node.tag_name, tag_name)
@@ -97,7 +74,7 @@ def kbest_viterbi_predict(word_seqs, emiss_params, trans_params, tag_names, k):
 				upcoming_layer.extend(get_k_best_parents(word, tag, current_layer))
 			current_layer = upcoming_layer
 
-		final_buffer = BestFirstBoundedSortedList()
+		final_buffer = BestFirstBoundedSortedList(k, lambda n: n.p)
 		for node in current_layer:
 			t = trans_params.get(node.tag_name, "")
 			l = node.p * t

@@ -7,11 +7,11 @@ Created on Tue Dec 08 22:12:34 2015
 
 def wordsorter(word):
     if word[0]=="@":
-        return "user"
+        return "@user"
     elif word[:4]=="http":
-        return "url"
+        return "http://<url>"
     elif word[0]=="#":
-        return "hashtag"
+        return "#hashtag"
     else:
         return word
         

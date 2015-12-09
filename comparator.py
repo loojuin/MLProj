@@ -42,7 +42,7 @@ def calculate_accuracy(pred_seqs, test_seqs):
 
 if __name__ == "__main__":
 	if len(sys.argv) != 3:
-		print "Not enough arguments. Usage: $ python comparator.py [file 1] [file 2]"
+		print "Wrong number of arguments. Usage: $ python comparator.py [file 1] [file 2]"
 	file1 = sys.argv[1]
 	file2 = sys.argv[2]
 	seqs1, junk1 = parse.parse_xy(file1)

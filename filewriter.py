@@ -1,6 +1,6 @@
 #!~/anaconda/bin/python
 #
-# This module contains the logic for writing the StateNode sequences into text files.
+# This module contains the logic for writing the StateNode sequences into text files.s
 
 
 from classes import *

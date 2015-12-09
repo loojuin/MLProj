@@ -112,7 +112,7 @@ def kbest_viterbi_predict(word_seqs, emiss_params, trans_params, tag_names, k):
 
 if __name__ == "__main__":
 	if len(sys.argv) != 5:
-		print "Not enough arguments. Usage: $ python kbest_viterbi.py [k] [training file] [testing file] [output file]"
+		print "Wrong number of arguments. Usage: $ python kbest_viterbi.py [k] [training file] [testing file] [output file]"
 		quit(0)
 	k = int(sys.argv[1])
 	train = sys.argv[2]
@@ -121,7 +121,6 @@ if __name__ == "__main__":
 	parse_start = time.time()
 	xy_train, tags = parse.parse_xy(train)
 	x_test = parse.parse_x(test)
-	xy_test, junk = parse.parse_xy(test)
 	parse_end = time.time()
 	print "Finished parsing."
 	train_start = time.time()
@@ -132,8 +131,8 @@ if __name__ == "__main__":
 	pred_start = time.time()
 	xy_pred = kbest_viterbi_predict(x_test, emiss_params, trans_params, tags, k)
 	pred_end = time.time()
+	print "Finished predicting."
 	filewriter.write_file(xy_pred, output)
-	acc = comparator.calculate_accuracy(xy_pred, xy_test)
 	# for seq in xy_pred:
 	# 	for node in seq:
 	# 		print node
@@ -141,4 +140,3 @@ if __name__ == "__main__":
 	print "Time taken to parse: %f s" % (parse_end - parse_start)
 	print "Time taken to train: %f s" % (train_end - train_start)
 	print "Time taken to predict: %f s" % (pred_end - pred_start)
-	print "Accuracy: %f" % acc

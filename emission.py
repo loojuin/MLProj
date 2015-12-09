@@ -106,7 +106,7 @@ def emission_predict(word_seqs, params, tag_names):
 
 if __name__ == "__main__":
 	if len(sys.argv) != 4:
-		print "Not enough arguments. Usage: $ python emission.py [training file] [testing file] [output file]"
+		print "Wrong number of arguments. Usage: $ python emission.py [training file] [testing file] [output file]"
 		quit(0)
 	train = sys.argv[1]
 	test = sys.argv[2]
@@ -114,7 +114,6 @@ if __name__ == "__main__":
 	parse_start = time.time()
 	xy_train, tags = ps.parse_xy(train)
 	x_test = ps.parse_x(test)
-	xy_test, junk = ps.parse_xy(test)
 	parse_end = time.time()
 	print "Finished parsing."
 	train_start = time.time()
@@ -124,8 +123,8 @@ if __name__ == "__main__":
 	pred_start = time.time()
 	xy_pred = emission_predict(x_test, emiss_params, tags)
 	pred_end = time.time()
+	print "Finished predicting."
 	filewriter.write_file(xy_pred, output)
-	acc = comparator.calculate_accuracy(xy_pred, xy_test)
 	# for seq in xy_pred:
 	# 	for node in seq:
 	# 		print node
@@ -133,4 +132,3 @@ if __name__ == "__main__":
 	print "Time taken to parse: %f s" % (parse_end - parse_start)
 	print "Time taken to train: %f s" % (train_end - train_start)
 	print "Time taken to predict: %f s" % (pred_end - pred_start)
-	print "Accuracy: %f" % acc
